@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schema Registry & AsyncAPI Management</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Highlight.js pour coloration syntaxique -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    
+    <!-- AsyncAPI Web Component -->
+    <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.5.0/webcomponents-bundle.js"></script>
+    <script src="https://unpkg.com/@asyncapi/web-component@latest/lib/asyncapi-web-component.js" defer></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <h1>🗂️ Schema Registry & AsyncAPI Management</h1>
+            <div class="header-actions">
+                <select id="envSelector" class="env-selector">
+                    <option value="">Select Environment</option>
+                </select>
+                <span class="user-info" id="userInfo">👤 Admin</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+        <div class="container">
+            <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+            <button class="tab-btn" data-tab="schemas">📋 Schemas</button>
+            <button class="tab-btn" data-tab="asyncapi">📄 AsyncAPI</button>
+            <button class="tab-btn" data-tab="bulk">⚙️ Bulk Operations</button>
+            <button class="tab-btn" data-tab="history">📝 History</button>
+            <button class="tab-btn" data-tab="chat">💬 AI Chat</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Health Check</h2>
+                    <button id="runHealthCheck" class="btn btn-primary">🔍 Run Health Check</button>
+                </div>
+                
+                <div id="healthCheckLoading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Running health check...</p>
+                </div>
+
+                <div id="healthCheckResults" class="health-results"></div>
+            </div>
+
+            <div class="section">
+                <h2>Quick Stats</h2>
+                <div id="quickStats" class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Total Subjects</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Soft Deleted</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Version Explosions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Issues</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schemas Tab -->
+        <div id="schemas" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Schema List</h2>
+                    <div class="filter-controls">
+                        <input type="text" id="schemaSearchPattern" placeholder="Search pattern..." class="input">
+                        <input type="number" id="minVersionsFilter" placeholder="Min versions" class="input" style="width: 120px;">
+                        <button id="loadSchemas" class="btn btn-primary">🔄 Load Schemas</button>
+                    </div>
+                </div>
+
+                <div id="schemasLoading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading schemas...</p>
+                </div>
+
+                <div id="schemasTable"></div>
+            </div>
+        </div>
+
+        <!-- AsyncAPI Tab -->
+        <div id="asyncapi" class="tab-content">
+            <!-- Topics List View -->
+            <div id="asyncapiTopicsView" class="section">
+                <div class="section-header">
+                    <h2>📋 Kafka Topics</h2>
+                    <div class="filter-controls">
+                        <button id="loadTopics" class="btn btn-primary">🔄 Load Topics</button>
+                        <button id="viewGeneratedSpecs" class="btn btn-secondary">📚 View Generated Specs</button>
+                    </div>
+                </div>
+
+                <div id="topicsLoading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading topics...</p>
+                </div>
+
+                <div id="topicsGrid" class="topics-grid"></div>
+            </div>
+
+            <!-- Spec Viewer -->
+            <div id="asyncapiSpecView" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2>📄 AsyncAPI Specification</h2>
+                    <div class="filter-controls">
+                        <button id="backToTopics" class="btn btn-secondary">← Back to Topics</button>
+                        <button id="downloadSpec" class="btn btn-primary">💾 Download YAML</button>
+                        <button id="copySpec" class="btn btn-secondary">📋 Copy to Clipboard</button>
+                        <button id="openInStudio" class="btn btn-secondary">🌐 Open in Studio</button>
+                    </div>
+                </div>
+
+                <div class="spec-info" id="specInfo"></div>
+
+                <div class="spec-viewer">
+                    <div class="viewer-tabs">
+                        <button class="viewer-tab-btn active" data-viewer-tab="yaml">YAML</button>
+                        <button class="viewer-tab-btn" data-viewer-tab="preview">📊 Interactive View</button>
+                        <button class="viewer-tab-btn" data-viewer-tab="json">JSON Schema</button>
+                    </div>
+
+                    <div id="yaml-view" class="viewer-content active">
+                        <pre><code id="specYaml" class="language-yaml"></code></pre>
+                    </div>
+
+                    <!-- Preview avec AsyncAPI Web Component -->
+                    <div id="preview-view" class="viewer-content">
+                        <div id="asyncapi-viewer-container">
+                            <!-- Le Web Component sera injecté ici dynamiquement -->
+                        </div>
+                    </div>
+
+                    <div id="json-view" class="viewer-content">
+                        <pre><code id="specJson" class="language-json"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated Specs List View -->
+            <div id="asyncapiSpecsListView" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2>📚 Generated Specifications</h2>
+                    <div class="filter-controls">
+                        <button id="backToTopicsFromList" class="btn btn-secondary">← Back to Topics</button>
+                        <button id="refreshSpecsList" class="btn btn-primary">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div id="specsListLoading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading specifications...</p>
+                </div>
+
+                <div id="specsListGrid" class="specs-list-grid"></div>
+            </div>
+        </div>
+
+        <!-- Bulk Operations Tab -->
+        <div id="bulk" class="tab-content">
+            <div class="section">
+                <h2>Bulk Operations</h2>
+                <p class="warning-text">⚠️ These operations affect multiple schemas. Use with caution!</p>
+
+                <div class="bulk-operation">
+                    <h3>Purge All Soft-Deleted Schemas</h3>
+                    <p>Permanently delete all schemas in soft-deleted state.</p>
+                    <button id="purgeSoftDeleted" class="btn btn-danger">🗑️ Purge Soft-Deleted</button>
+                </div>
+
+                <div class="bulk-operation">
+                    <h3>Bulk Delete by Filter</h3>
+                    <div class="form-group">
+                        <label>Minimum Versions:</label>
+                        <input type="number" id="bulkMinVersions" class="input" placeholder="e.g., 50">
+                    </div>
+                    <div class="form-group">
+                        <label>Pattern Match:</label>
+                        <input type="text" id="bulkPattern" class="input" placeholder="e.g., test-">
+                    </div>
+                    <div class="form-group">
+                        <label>Delete Type:</label>
+                        <select id="bulkDeleteType" class="input">
+                            <option value="soft">Soft Delete</option>
+                            <option value="hard">Hard Delete (Permanent)</option>
+                        </select>
+                    </div>
+                    <button id="previewBulkDelete" class="btn btn-secondary">👁️ Preview</button>
+                    <button id="executeBulkDelete" class="btn btn-danger" disabled>⚡ Execute</button>
+                </div>
+
+                <div id="bulkPreview" class="bulk-preview" style="display: none;">
+                    <h4>Preview Results</h4>
+                    <div id="bulkPreviewContent"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Chat Tab -->
+        <div id="chat" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2>💬 AI Assistant</h2>
+                    <div class="filter-controls">
+                        <button id="clearChat" class="btn btn-secondary">🗑️ Clear Chat</button>
+                    </div>
+                </div>
+
+                <div class="chat-container">
+                    <div id="chatMessages" class="chat-messages"></div>
+                    
+                    <div class="chat-input-container">
+                        <input 
+                            type="text" 
+                            id="chatInput" 
+                            class="input chat-input" 
+                            placeholder="Ask about your schemas, topics, or AsyncAPI..."
+                            maxlength="500"
+                        >
+                        <button id="sendChatMessage" class="btn btn-primary">
+                            📤 Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Operation History</h2>
+                    <button id="refreshHistory" class="btn btn-secondary">🔄 Refresh</button>
+                </div>
+                <div id="historyTable"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for confirmations -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage"></p>
+            <div class="modal-actions">
+                <button id="modalCancel" class="btn btn-secondary">Cancel</button>
+                <button id="modalConfirm" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer"></div>
+
+    <!-- Highlight.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>

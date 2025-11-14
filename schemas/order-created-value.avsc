@@ -1,0 +1,103 @@
+{
+  "type": "record",
+  "name": "OrderCreated",
+  "namespace": "com.example.orders.events",
+  "doc": "Event emitted when a new order is created",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Unique order identifier (UUID)"
+    },
+    {
+      "name": "customer_id",
+      "type": "string",
+      "doc": "Customer identifier"
+    },
+    {
+      "name": "order_date",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Order creation timestamp"
+    },
+    {
+      "name": "total_amount",
+      "type": "double",
+      "doc": "Total order amount"
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "default": "EUR",
+      "doc": "Currency code (ISO 4217)"
+    },
+    {
+      "name": "items",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "OrderItem",
+          "fields": [
+            {
+              "name": "product_id",
+              "type": "string",
+              "doc": "Product identifier"
+            },
+            {
+              "name": "product_name",
+              "type": "string",
+              "doc": "Product display name"
+            },
+            {
+              "name": "quantity",
+              "type": "int",
+              "doc": "Quantity ordered"
+            },
+            {
+              "name": "unit_price",
+              "type": "double",
+              "doc": "Unit price"
+            }
+          ]
+        }
+      },
+      "doc": "List of order items"
+    },
+    {
+      "name": "shipping_address",
+      "type": {
+        "type": "record",
+        "name": "Address",
+        "fields": [
+          {"name": "street", "type": "string"},
+          {"name": "city", "type": "string"},
+          {"name": "postal_code", "type": "string"},
+          {"name": "country", "type": "string"}
+        ]
+      },
+      "doc": "Shipping address"
+    },
+    {
+      "name": "payment_method",
+      "type": {
+        "type": "enum",
+        "name": "PaymentMethod",
+        "symbols": ["CREDIT_CARD", "DEBIT_CARD", "PAYPAL", "BANK_TRANSFER"]
+      },
+      "default": "CREDIT_CARD",
+      "doc": "Payment method used"
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Additional metadata"
+    }
+  ]
+}

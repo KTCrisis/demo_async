@@ -1,0 +1,36 @@
+{
+  "type": "record",
+  "name": "OrderCancelled",
+  "namespace": "com.example.orders.events",
+  "doc": "Event emitted when an order is cancelled",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Order identifier"
+    },
+    {
+      "name": "cancelled_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Cancellation timestamp"
+    },
+    {
+      "name": "reason",
+      "type": {
+        "type": "enum",
+        "name": "CancellationReason",
+        "symbols": ["CUSTOMER_REQUEST", "OUT_OF_STOCK", "PAYMENT_FAILED", "FRAUD_DETECTED", "OTHER"]
+      },
+      "doc": "Cancellation reason"
+    },
+    {
+      "name": "refund_amount",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Refund amount if applicable"
+    }
+  ]
+}

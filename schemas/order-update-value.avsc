@@ -1,0 +1,38 @@
+{
+  "type": "record",
+  "name": "OrderUpdated",
+  "namespace": "com.example.orders.events",
+  "doc": "Event emitted when an order is updated",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Order identifier"
+    },
+    {
+      "name": "updated_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Update timestamp"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "OrderStatus",
+        "symbols": ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"]
+      },
+      "doc": "New order status"
+    },
+    {
+      "name": "updated_fields",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "doc": "List of fields that were updated"
+    }
+  ]
+}
