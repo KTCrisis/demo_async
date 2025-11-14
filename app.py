@@ -57,15 +57,15 @@ def run_async(coro):
 # Configuration
 ENVIRONMENTS = {
     'default': {
-        'endpoint': "https://psrc-4nyjd.us-central1.gcp.confluent.cloud",
-        'api_key': "Y2KJ4O5W6PV7Z7IB",
-        'api_secret': "cfltEpgJem3dmsCjxrAvVihBSZGKPx0esDdp5ur5osatxDp8uwrLTdfY7tGSe38A"
+        'endpoint': "xxxx",
+        'api_key': "xxxx",
+        'api_secret': "xxxxx"
     }
 }
 
 # Simple authentication
-API_USERNAME = os.getenv('API_USERNAME', 'admin')
-API_PASSWORD = os.getenv('API_PASSWORD', 'admin123')
+API_USERNAME = os.getenv('API_USERNAME', 'xxxx')
+API_PASSWORD = os.getenv('API_PASSWORD', 'xxxx')
 
 # Store operation history
 operation_history = []
